@@ -7,7 +7,6 @@ on:
 jobs:
   build:
     runs-on: windows-latest
-    # 这里双重保证权限开启
     permissions:
       contents: write 
     
@@ -19,20 +18,16 @@ jobs:
       with:
         dotnet-version: 8.x
     
-    - name: Build
-      # 加上 --no-incremental 确保每次都是全新编译
-      run: dotnet build --configuration Release --no-incremental
+    - name: Build and Publish
+      # 直接编译解决方案，并强制把最终的 dll 吐到 MyFinalDLL 这个文件夹里
+      run: dotnet publish HsMod.sln --configuration Release -o ./MyFinalDLL
 
-    - name: Create Unique Release
+    - name: Create Release and Upload
       uses: softprops/action-gh-release@v2
       with:
-        # 使用运行编号，确保标签永远是新的（如 v1, v2, v3...），彻底避开 Not Found
         tag_name: "v${{ github.run_number }}"
         name: "Build Release ${{ github.run_number }}"
-        draft: false
-        prerelease: false
-        # 扫描所有生成的 dll 文件并上传
-        files: |
-          **/bin/Release/**/*.dll
+        # 直接去 MyFinalDLL 文件夹里抓人
+        files: ./MyFinalDLL/*.dll
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
