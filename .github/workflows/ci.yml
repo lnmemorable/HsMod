@@ -7,8 +7,9 @@ on:
 jobs:
   build:
     runs-on: windows-latest
+    # 这里双重保证权限开启
     permissions:
-      contents: write  # 必须开启，否则无法创建 Release
+      contents: write 
     
     steps:
     - uses: actions/checkout@v4
@@ -19,15 +20,19 @@ jobs:
         dotnet-version: 8.x
     
     - name: Build
-      run: dotnet build --configuration Release
+      # 加上 --no-incremental 确保每次都是全新编译
+      run: dotnet build --configuration Release --no-incremental
 
-    # 使用 Python 快速生成一个时间戳 Tag，避免冲突
-    - name: Create Release
+    - name: Create Unique Release
       uses: softprops/action-gh-release@v2
       with:
-        tag_name: "DLL-${{ github.run_number }}" # 使用运行次数作为标签，永不重复
+        # 使用运行编号，确保标签永远是新的（如 v1, v2, v3...），彻底避开 Not Found
+        tag_name: "v${{ github.run_number }}"
+        name: "Build Release ${{ github.run_number }}"
+        draft: false
+        prerelease: false
+        # 扫描所有生成的 dll 文件并上传
         files: |
-          **/*.dll
-          !**/obj/**
+          **/bin/Release/**/*.dll
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
