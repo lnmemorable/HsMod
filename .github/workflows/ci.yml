@@ -3,46 +3,29 @@ name: Auto Build Test
 on:
   push:
     branches: [ "bepinex5" ]
-    tags: [ "v*" ]  # 关键：这行能确保你推送标签时触发脚本
-  pull_request:
-  merge_group:
 
 jobs:
   build:
     runs-on: windows-latest
-    permissions:    # 关键：给脚本写入 Release 的权限
+    permissions:
       contents: write
     
     steps:
     - uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
     
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: 8.x
     
-    - name: Restore dependencies
-      run: dotnet restore --locked-mode
-    
-    - name: Build HsMod
-      run: dotnet build --configuration Release --no-restore
+    - name: Build
+      run: dotnet build --configuration Release
 
-    # 1. 依然保留这个，方便你快速查看编译是否成功
-    - name: Upload HsMod Artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: HsMod-Output-Zip
-        path: |
-          **/*.dll
-          !**/obj/**
-
-    # 2. 只有在你推送标签（如 v1.0.0）时，才会把 .dll 原文件挂在 Release 页面
-    - name: Create Release and Upload DLL
+    # 重点：这一步会把 dll 变成 Release 里的文件，直接点击下载
+    - name: Auto Release DLL
       uses: softprops/action-gh-release@v2
-      if: startsWith(github.ref, 'refs/tags/')
       with:
+        tag_name: latest
         files: |
           **/*.dll
           !**/obj/**
