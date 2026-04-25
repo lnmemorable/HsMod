@@ -7,6 +7,7 @@ on:
 jobs:
   build:
     runs-on: windows-latest
+    # 这一行非常关键，必须开启写入权限
     permissions:
       contents: write
     
@@ -21,18 +22,17 @@ jobs:
     - name: Build
       run: dotnet build --configuration Release
 
-    # 自动生成一个带时间戳的名字，防止重复冲突
-    - name: Set Release Name
+    # 自动生成一个带时间戳的 Tag
+    - name: Set Release Tag
       run: echo "REL_TAG=Build-$(date +'%Y%m%d-%H%M%S')" >> $GITHUB_ENV
       shell: bash
 
+    # 发布到 Release 页面（直接下载 .dll）
     - name: Create Auto Release
       uses: softprops/action-gh-release@v2
       with:
         tag_name: ${{ env.REL_TAG }}
         name: Release ${{ env.REL_TAG }}
-        draft: false
-        prerelease: false
         files: |
           **/*.dll
           !**/obj/**
