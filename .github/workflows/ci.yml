@@ -21,11 +21,18 @@ jobs:
     - name: Build
       run: dotnet build --configuration Release
 
-    # 重点：这一步会把 dll 变成 Release 里的文件，直接点击下载
-    - name: Auto Release DLL
+    # 自动生成一个带时间戳的名字，防止重复冲突
+    - name: Set Release Name
+      run: echo "REL_TAG=Build-$(date +'%Y%m%d-%H%M%S')" >> $GITHUB_ENV
+      shell: bash
+
+    - name: Create Auto Release
       uses: softprops/action-gh-release@v2
       with:
-        tag_name: latest
+        tag_name: ${{ env.REL_TAG }}
+        name: Release ${{ env.REL_TAG }}
+        draft: false
+        prerelease: false
         files: |
           **/*.dll
           !**/obj/**
