@@ -18,16 +18,17 @@ jobs:
       with:
         dotnet-version: 8.x
     
-    - name: Build and Publish
-      # 直接编译解决方案，并强制把最终的 dll 吐到 MyFinalDLL 这个文件夹里
-      run: dotnet publish HsMod.sln --configuration Release -o ./MyFinalDLL
+    - name: Build HsMod
+      # 严格按照说明书的命令执行
+      run: dotnet build --configuration Release
 
-    - name: Create Release and Upload
+    - name: Create Release and Upload DLL
       uses: softprops/action-gh-release@v2
       with:
         tag_name: "v${{ github.run_number }}"
-        name: "Build Release ${{ github.run_number }}"
-        # 直接去 MyFinalDLL 文件夹里抓人
-        files: ./MyFinalDLL/*.dll
+        name: "HsMod Build ${{ github.run_number }}"
+        # 核心修改：使用说明书里指定的路径
+        files: |
+          ./HsMod/Release/HsMod.dll
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
