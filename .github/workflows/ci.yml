@@ -1,31 +1,67 @@
 name: Auto Build Test
 
+
+
 on:
+
   push:
+
     branches: [ "bepinex5" ]
-  pull_request:
-  merge_group:
+
+
 
 jobs:
+
   build:
+
     runs-on: windows-latest
 
+    permissions:
+
+      contents: write 
+
+    
+
     steps:
-    # Checkout the repository
+
     - uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
+
     
-    # Setup .NET SDK
+
     - name: Setup .NET
+
       uses: actions/setup-dotnet@v4
+
       with:
+
         dotnet-version: 8.x
+
     
-    # Restore dependencies
-    - name: Restore dependencies
-      run: dotnet restore --locked-mode
-    
-    # Build the project
+
     - name: Build HsMod
-      run: dotnet build --configuration Release --no-restore
+
+      # 严格按照说明书的命令执行
+
+      run: dotnet build --configuration Release
+
+
+
+    - name: Create Release and Upload DLL
+
+      uses: softprops/action-gh-release@v2
+
+      with:
+
+        tag_name: "v${{ github.run_number }}"
+
+        name: "HsMod Build ${{ github.run_number }}"
+
+        # 核心修改：使用说明书里指定的路径
+
+        files: |
+
+          ./HsMod/Release/HsMod.dll
+
+      env:
+
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
