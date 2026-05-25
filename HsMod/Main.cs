@@ -208,7 +208,7 @@ namespace HsMod
                 }
                 else if (keyTimeGearMax.Value.IsDown())
                 {
-                    timeGear.Value = timeGear.Value >= 16 ? 64 : 16;
+                    timeGear.Value = timeGear.Value >= 24 ? 64 : 24;
                     return;
                 }
                 else if (keyTimeGearDefault.Value.IsDown())
